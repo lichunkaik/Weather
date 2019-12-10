@@ -6,14 +6,16 @@ import androidx.core.content.ContextCompat;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.net.Uri;
-import android.os.Build;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.util.Log;
@@ -69,7 +71,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private String TAG = "MainActivity";
     private LocationManager locationManager;
-    private LocationListener locationListener;
     private String City ;
     private ImageView imageView_back;
     private TextView textView_city;
@@ -91,22 +92,28 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private RealtimeInfo realtimeInfo = new RealtimeInfo();
     private ImageView imageView_location;
     private String locationProvider;
+    private IntentFilter intentFilter;
+    private NetworkChangeReceiver networkChangeReceiver;
+    private RefreshLayout refreshLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        intentFilter = new IntentFilter();
+        intentFilter.addAction("android.net.conn.CONNECTIVITY_CHANGE");
+        networkChangeReceiver = new NetworkChangeReceiver();
+        registerReceiver(networkChangeReceiver, intentFilter);
         //和风天气api
         newWeatherApiKey = getResources().getString(R.string.newapikey);
         //高德地图api
         amapApikey = getResources().getString(R.string.amap_apikey);
-        getLocation(this);
-        JinrishiciFactory.init(this);
         ImmersionBar.with(this).init();
-        initView();
-        setBack();
-        getPermission();
+    }
 
+    protected void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(networkChangeReceiver);
     }
 
     /**
@@ -130,6 +137,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     case 2:
                         imageView_loading.setImageResource(R.drawable.logo_succcess);
                         textView_loading.setText("更新成功");
+                        refreshLayout.finishRefresh();
                         break;
                     case 3:
                         imageView_loading.setImageResource(R.drawable.logo_fail);
@@ -179,7 +187,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         WindowManager wm = (WindowManager) this.getSystemService(Context.WINDOW_SERVICE);
         int height = wm.getDefaultDisplay().getHeight();
         RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        layoutParams.topMargin = -(height - imageView_back.getHeight())/5;
+//        layoutParams.topMargin = -(height - imageView_back.getHeight())/6;
+        layoutParams.bottomMargin = 580;
         imageView_back.setLayoutParams(layoutParams);
     }
 
@@ -220,15 +229,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         imageView_location = findViewById(R.id.imageView_location);
         imageView_location.setOnClickListener(this);
         realjinrisiciTextView = findViewById(R.id.realjinrisiciTextView);
+        refreshLayout = (RefreshLayout)findViewById(R.id.refreshLayout);
+    }
 
-        final RefreshLayout refreshLayout = (RefreshLayout)findViewById(R.id.refreshLayout);
-        refreshLayout.autoRefresh();
+    /**
+     *
+     */
+    private void refreshLayout(){
+
         //设置 Header 为 贝塞尔雷达 样式
         refreshLayout.setRefreshHeader(new BezierRadarHeader(this).setEnableHorizontalDrag(true));
         //设置 Footer 为 球脉冲 样式
         refreshLayout.setRefreshFooter(new BallPulseFooter(this).setSpinnerStyle(SpinnerStyle.Scale));
 //        refreshLayout.setRefreshHeader(new ClassicsHeader(this));
         refreshLayout.setRefreshFooter(new ClassicsFooter(this));
+        refreshLayout.autoRefresh();
         refreshLayout.setOnRefreshListener(new OnRefreshListener() {
             @Override
             public void onRefresh(RefreshLayout refreshlayout) {
@@ -239,6 +254,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     forecastsendRequestWithOkHttp(City,newWeatherApiKey,5);//加载5天数据
                     refreshlayout.finishRefresh();
                 }
+                else{
+                    refreshLayout.finishRefresh();
+                    Toast.makeText(MainActivity.this,"网络不可用",Toast.LENGTH_SHORT).show();
+                }
+
             }
         });
         refreshLayout.setOnLoadMoreListener(new OnLoadMoreListener() {
@@ -732,4 +752,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             showLocation(location);
         }
     };
+
+    //判断网络状态
+    class NetworkChangeReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+            if (networkInfo != null && networkInfo.isAvailable()) {
+                getLocation(MainActivity.this);
+                JinrishiciFactory.init(MainActivity.this);
+                initView();
+                setBack();
+                getPermission();
+                refreshLayout();
+            } else {
+                Toast.makeText(context, "当前网络不可用", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
 }
