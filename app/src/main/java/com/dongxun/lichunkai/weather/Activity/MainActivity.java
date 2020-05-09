@@ -53,6 +53,7 @@ import com.scwang.smart.refresh.layout.listener.OnRefreshListener;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -71,7 +72,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private String TAG = "MainActivity";
     private LocationManager locationManager;
-    private String City ;
+    private String City;
     private ImageView imageView_back;
     private TextView textView_city;
     private TextView textView_temperature;
@@ -109,6 +110,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         //高德地图api
         amapApikey = getResources().getString(R.string.amap_apikey);
         ImmersionBar.with(this).init();
+        getLocation(this);
     }
 
     protected void onDestroy() {
@@ -122,10 +124,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      */
     private void showMessage(final int type) {
         //一秒钟显示信息(数据获取成功则显示2秒，失败则一直显示)
-        CountDownTimer countDownTimer = new CountDownTimer(1*1000, 2000) {
+        CountDownTimer countDownTimer = new CountDownTimer(1 * 1000, 2000) {
             @Override
             public void onTick(long millisUntilFinished) {
-                switch (type){
+                switch (type) {
                     case 0:
                         imageView_loading.setImageResource(R.drawable.logo_location);
                         textView_loading.setText("正在定位");
@@ -149,9 +151,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         break;
                 }
             }
+
             @Override
             public void onFinish() {
-                switch (type){
+                switch (type) {
                     case 2:
                         LinearLayout_message.setVisibility(View.GONE);
                         break;
@@ -160,7 +163,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }.start();
     }
 
-    private void jrscapi(){
+    private void jrscapi() {
         //异步方法
         JinrishiciClient client = JinrishiciClient.getInstance();
         client.getOneSentenceBackground(new JinrishiciCallback() {
@@ -196,14 +199,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      * 根据季节显示背景图
      */
     private int getBackImg() {
-        switch (Integer.parseInt(new SimpleDateFormat("MM").format(new Date()))){
-            case 3: case 4:case 5:
+        switch (Integer.parseInt(new SimpleDateFormat("MM").format(new Date()))) {
+            case 3:
+            case 4:
+            case 5:
                 return R.drawable.back_spring;
-            case 6: case 7:case 8:
+            case 6:
+            case 7:
+            case 8:
                 return R.drawable.back_summer;
-            case 9: case 10:case 11:
+            case 9:
+            case 10:
+            case 11:
                 return R.drawable.back_autumn;
-            case 12: case 1:case 2:
+            case 12:
+            case 1:
+            case 2:
                 return R.drawable.back_winter;
         }
         return R.drawable.back_spring;
@@ -229,13 +240,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         imageView_location = findViewById(R.id.imageView_location);
         imageView_location.setOnClickListener(this);
         realjinrisiciTextView = findViewById(R.id.realjinrisiciTextView);
-        refreshLayout = (RefreshLayout)findViewById(R.id.refreshLayout);
+        refreshLayout = (RefreshLayout) findViewById(R.id.refreshLayout);
     }
 
     /**
      *
      */
-    private void refreshLayout(){
+    private void refreshLayout() {
 
         //设置 Header 为 贝塞尔雷达 样式
         refreshLayout.setRefreshHeader(new BezierRadarHeader(this).setEnableHorizontalDrag(true));
@@ -247,16 +258,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         refreshLayout.setOnRefreshListener(new OnRefreshListener() {
             @Override
             public void onRefresh(RefreshLayout refreshlayout) {
-                if(NetworkUtils.isConnected()){
+                if (NetworkUtils.isConnected()) {
                     jrscapi();
-                    sendRequestWithOkHttp(City,newWeatherApiKey);
-                    AirsendRequestWithOkHttp(City,newWeatherApiKey);
-                    forecastsendRequestWithOkHttp(City,newWeatherApiKey,5);//加载5天数据
+                    sendRequestWithOkHttp(City, newWeatherApiKey);
+                    AirsendRequestWithOkHttp(City, newWeatherApiKey);
+                    forecastsendRequestWithOkHttp(City, newWeatherApiKey, 5);//加载5天数据
                     refreshlayout.finishRefresh();
-                }
-                else{
+                } else {
                     refreshLayout.finishRefresh();
-                    Toast.makeText(MainActivity.this,"网络不可用",Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "网络不可用", Toast.LENGTH_SHORT).show();
                 }
 
             }
@@ -264,7 +274,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         refreshLayout.setOnLoadMoreListener(new OnLoadMoreListener() {
             @Override
             public void onLoadMore(RefreshLayout refreshlayout) {
-                forecastsendRequestWithOkHttp(City,newWeatherApiKey,0);//items==0的时候加载全部7天数据
+                forecastsendRequestWithOkHttp(City, newWeatherApiKey, 0);//items==0的时候加载全部7天数据
                 refreshLayout.finishLoadMore();
             }
         });
@@ -277,14 +287,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         //显示信息
         showMessage(1);
         // 发送查询天气请求
-        if(NetworkUtils.isConnected()){
+        if (NetworkUtils.isConnected()) {
             jrscapi();
-            sendRequestWithOkHttp(city,newWeatherApiKey);
-            AirsendRequestWithOkHttp(city,newWeatherApiKey);
-            forecastsendRequestWithOkHttp(city,newWeatherApiKey,5);//加载5天数据
-        }
-        else{
-            Toast.makeText(this,"请打开网络连接",Toast.LENGTH_LONG).show();
+            sendRequestWithOkHttp(city, newWeatherApiKey);
+            AirsendRequestWithOkHttp(city, newWeatherApiKey);
+            forecastsendRequestWithOkHttp(city, newWeatherApiKey, 5);//加载5天数据
+        } else {
+            Toast.makeText(this, "请打开网络连接", Toast.LENGTH_LONG).show();
         }
 
 
@@ -297,7 +306,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
             PermissionUtil.getInstance().requestLocation(this);
-        }else {
+        } else {
             getDataByCity(City);
         }
     }
@@ -311,31 +320,32 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        switch (requestCode){
+        switch (requestCode) {
             case 504:
-                if(grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     getDataByCity(City);
-                }else{
+                } else {
                     //跳转应用详情页
                     startActivity(appSetIntent(this));
                 }
                 break;
-            default:break;
+            default:
+                break;
         }
     }
 
     /**
      * 请求天气数据
      */
-    private void sendRequestWithOkHttp(final String city,final String apikey){
+    private void sendRequestWithOkHttp(final String city, final String apikey) {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                try{
+                try {
                     OkHttpClient client = new OkHttpClient();//新建一个OKHttp的对象
                     //和风请求方式
                     Request request = new Request.Builder()
-                            .url("https://free-api.heweather.net/s6/weather/now?location="+city+"&key="+newWeatherApiKey+"")
+                            .url("https://free-api.heweather.net/s6/weather/now?location=" + city + "&key=" + newWeatherApiKey + "")
                             .build();//创建一个Request对象
                     //第三步构建Call对象
                     Call call = client.newCall(request);
@@ -346,6 +356,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             //显示信息
                             showMessage(3);
                         }
+
                         @Override
                         public void onResponse(Call call, Response response) throws IOException {
                             String responseData = response.body().string();//处理返回的数据
@@ -359,7 +370,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                         }
                     });
-                }catch (Exception e){
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
@@ -369,16 +380,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     /**
      * 请求天气空气质量数据
      */
-    private void AirsendRequestWithOkHttp(final String city,final String apikey){
+    private void AirsendRequestWithOkHttp(final String city, final String apikey) {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                try{
+                try {
                     OkHttpClient client = new OkHttpClient();//新建一个OKHttp的对象
 
                     //和风请求方式
                     Request request = new Request.Builder()
-                            .url("https://free-api.heweather.net/s6/air/now?location="+city+"&key="+newWeatherApiKey+"")
+                            .url("https://free-api.heweather.net/s6/air/now?location=" + city + "&key=" + newWeatherApiKey + "")
                             .build();//创建一个Request对象
                     //第三步构建Call对象
                     Call call = client.newCall(request);
@@ -389,6 +400,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             //显示信息
                             showMessage(3);
                         }
+
                         @Override
                         public void onResponse(Call call, Response response) throws IOException {
                             String responseData = response.body().string();//处理返回的数据
@@ -402,7 +414,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                         }
                     });
-                }catch (Exception e){
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
@@ -412,16 +424,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     /**
      * 请求天气未来7天的天气数据
      */
-    private void forecastsendRequestWithOkHttp(final String city, final String apikey, final int items){
+    private void forecastsendRequestWithOkHttp(final String city, final String apikey, final int items) {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                try{
+                try {
                     OkHttpClient client = new OkHttpClient();//新建一个OKHttp的对象
 
                     //和风请求方式
                     Request request = new Request.Builder()
-                            .url("https://free-api.heweather.net/s6/weather/forecast?location="+city+"&key="+newWeatherApiKey+"")
+                            .url("https://free-api.heweather.net/s6/weather/forecast?location=" + city + "&key=" + newWeatherApiKey + "")
                             .build();//创建一个Request对象
                     //第三步构建Call对象
                     Call call = client.newCall(request);
@@ -432,20 +444,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             //显示信息
                             showMessage(3);
                         }
+
                         @Override
                         public void onResponse(Call call, Response response) throws IOException {
                             String responseData = response.body().string();//处理返回的数据
                             try {
                                 JSONObject responses = new JSONObject(responseData);
                                 String newresponse = responses.getString("HeWeather6");
-                                forecastparseJSON(newresponse,items);//解析JSON
+                                forecastparseJSON(newresponse, items);//解析JSON
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
 
                         }
                     });
-                }catch (Exception e){
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
@@ -456,8 +469,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      * 解析未来天气JSON（和风API）
      * @param responseData
      */
-    private void forecastparseJSON(String responseData,int items) {
-        String basic= null,status = null,now= null,daily_forecast = null;
+    private void forecastparseJSON(String responseData, int items) {
+        String basic = null, status = null, now = null, daily_forecast = null;
         try {
             JSONArray arr = new JSONArray(responseData);
             for (int i = 0; i < arr.length(); i++) {
@@ -471,37 +484,36 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 JSONArray jsonObjectnow = new JSONArray(daily_forecast);
                 //未来天气信息
                 futureInfos.removeAll(futureInfos);
-                if(items==0){
-                    for (int i = 0;i < jsonObjectnow.length();i++) {
+                if (items == 0) {
+                    for (int i = 0; i < jsonObjectnow.length(); i++) {
                         JSONObject future = jsonObjectnow.getJSONObject(i);
 
                         FutureInfo futureInfo = new FutureInfo();
                         futureInfo.setDate(future.getString("date"));
-                        futureInfo.setTemperature(future.getString("tmp_max")+"℃"+"/"+future.getString("tmp_min")+"℃");
+                        futureInfo.setTemperature(future.getString("tmp_max") + "℃" + "/" + future.getString("tmp_min") + "℃");
                         futureInfo.setWeather(future.getString("cond_txt_n"));
                         futureInfo.setWid_day(future.getString("wind_sc"));
 //                    futureInfo.setWid_night(future.getString("wind_sc"));
 //                    futureInfo.setDirect(future.getString("wind_dir"));
-                        futureInfo.setToday(i == 0?true:false);
+                        futureInfo.setToday(i == 0 ? true : false);
                         futureInfo.setWeek(ToolHelper.getWeekByDate(future.getString("date")));
-                        futureInfo.setWid_img(ToolHelper.getWidImg(ToolHelper.isDay()?future.getString("cond_code_d"):future.getString("cond_code_n"),ToolHelper.isDay()));
+                        futureInfo.setWid_img(ToolHelper.getWidImg(ToolHelper.isDay() ? future.getString("cond_code_d") : future.getString("cond_code_n"), ToolHelper.isDay()));
                         futureInfos.add(futureInfo);
                     }
-                }
-                else{
-                    for (int i = 0;i < items;i++) {
+                } else {
+                    for (int i = 0; i < items; i++) {
                         JSONObject future = jsonObjectnow.getJSONObject(i);
 
                         FutureInfo futureInfo = new FutureInfo();
                         futureInfo.setDate(future.getString("date"));
-                        futureInfo.setTemperature(future.getString("tmp_max")+"℃"+"/"+future.getString("tmp_min")+"℃");
+                        futureInfo.setTemperature(future.getString("tmp_max") + "℃" + "/" + future.getString("tmp_min") + "℃");
                         futureInfo.setWeather(future.getString("cond_txt_n"));
                         futureInfo.setWid_day(future.getString("wind_sc"));
 //                    futureInfo.setWid_night(future.getString("wind_sc"));
 //                    futureInfo.setDirect(future.getString("wind_dir"));
-                        futureInfo.setToday(i == 0?true:false);
+                        futureInfo.setToday(i == 0 ? true : false);
                         futureInfo.setWeek(ToolHelper.getWeekByDate(future.getString("date")));
-                        futureInfo.setWid_img(ToolHelper.getWidImg(ToolHelper.isDay()?future.getString("cond_code_d"):future.getString("cond_code_n"),false));
+                        futureInfo.setWid_img(ToolHelper.getWidImg(ToolHelper.isDay() ? future.getString("cond_code_d") : future.getString("cond_code_n"), false));
                         futureInfos.add(futureInfo);
                     }
                 }
@@ -510,11 +522,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        FutureAdapter myAdapter = new FutureAdapter(MainActivity.this,R.layout.future,futureInfos);
+                        FutureAdapter myAdapter = new FutureAdapter(MainActivity.this, R.layout.future, futureInfos);
                         ListView_future.setAdapter(myAdapter);
-                    }});
+                    }
+                });
 
-            }else {
+            } else {
                 searchFail("");
             }
         } catch (JSONException e) {
@@ -527,7 +540,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      * @param responseData
      */
     private void AirparseJSON(String responseData) {
-        String basic= null,status = null,now= null,air_now_city = null;
+        String basic = null, status = null, now = null, air_now_city = null;
         try {
             JSONArray arr = new JSONArray(responseData);
             for (int i = 0; i < arr.length(); i++) {
@@ -539,18 +552,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             if (status.equals("ok")) {
                 //当前空气质量信息
                 JSONObject jsonObjectnow = new JSONObject(air_now_city);
-                   final String air_q = jsonObjectnow.optString("aqi");
+                final String air_q = jsonObjectnow.optString("aqi");
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         //描述太长隐藏”空气“
-                        if (ToolHelper.getAqiLevel(Integer.parseInt(air_q)).length()>2){
+                        if (ToolHelper.getAqiLevel(Integer.parseInt(air_q)).length() > 2) {
                             textView_aqi.setText(ToolHelper.getAqiLevel(Integer.parseInt(air_q)) + " " + air_q);
-                        }else {
+                        } else {
                             textView_aqi.setText("空气" + ToolHelper.getAqiLevel(Integer.parseInt(air_q)) + " " + air_q);
                         }
-                    }});
-            }else {
+                    }
+                });
+            } else {
                 searchFail("");
             }
         } catch (JSONException e) {
@@ -563,7 +577,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      * @param responseData
      */
     private void parseJSON(String responseData) {
-        String basic= null,status = null,now= null,air_now_city = null;
+        String basic = null, status = null, now = null, air_now_city = null;
         try {
             JSONArray arr = new JSONArray(responseData);
 
@@ -589,8 +603,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 realtimeInfo.setWid(jsonObjectnow.getString("cond_code"));
 
 //                }
-                searchSuccess("",city,realtimeInfo);
-            }else {
+                searchSuccess("", city, realtimeInfo);
+            } else {
                 searchFail("");
             }
         } catch (JSONException e) {
@@ -615,7 +629,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      * 查询天气成功，更新UI
      * @param reason
      */
-    private void searchSuccess(final String reason, final String city, final RealtimeInfo realtimeInfo){
+    private void searchSuccess(final String reason, final String city, final RealtimeInfo realtimeInfo) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -626,7 +640,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 textView_temperature.setText(realtimeInfo.getTemperature() + "°");
                 textView_humidity.setText("湿度 " + realtimeInfo.getHumidity());
                 textView_info.setText(realtimeInfo.getInfo());
-                imageView_wid.setImageResource(getWidImg(realtimeInfo.getWid(),true));
+                imageView_wid.setImageResource(getWidImg(realtimeInfo.getWid(), true));
                 textView_power.setText("风力 " + realtimeInfo.getPower());
                 textView_time.setText(new SimpleDateFormat("YYYY年MM月dd日 E").format(new Date()));
 
@@ -651,10 +665,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        switch (requestCode){
+        switch (requestCode) {
             case 1:
-                if (resultCode == RESULT_OK)
-                {
+                if (resultCode == RESULT_OK) {
                     //获取返回信息并获取数据
                     String resultCity = data.getStringExtra("resultCity");
                     City = resultCity;
@@ -669,38 +682,48 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View view) {
-        switch (view.getId()){
+        switch (view.getId()) {
             case R.id.imageView_location:
-                Intent intent = new Intent(MainActivity.this,CityActivity.class);
-                intent.putExtra("currentCity",City);
-                startActivityForResult(intent,1);
+                Intent intent = new Intent(MainActivity.this, CityActivity.class);
+                intent.putExtra("currentCity", City);
+                startActivityForResult(intent, 1);
                 break;
         }
     }
 
     //根据经纬度查询位置信息以提供天气查询
-    @SuppressLint("MissingPermission")
-    private void getLocation(Context context){
+    private void getLocation(Context context) {
         //1.获取位置管理器
         locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
         //2.获取位置提供器，GPS或是NetWork
         List<String> providers = locationManager.getProviders(true);
-        if (providers.contains(LocationManager.NETWORK_PROVIDER)){
+        if (providers.contains(LocationManager.NETWORK_PROVIDER)) {
             //如果是网络定位
             locationProvider = LocationManager.NETWORK_PROVIDER;
-        }else if (providers.contains(LocationManager.GPS_PROVIDER)){
+        } else if (providers.contains(LocationManager.GPS_PROVIDER)) {
             //如果是GPS定位
             locationProvider = LocationManager.GPS_PROVIDER;
-        }else {
+        } else {
             Toast.makeText(this, "没有可用的位置提供器", Toast.LENGTH_SHORT).show();
             return;
         }
 
         //3.获取上次的位置，一般第一次运行，此值为null
-        @SuppressLint("MissingPermission") Location location = locationManager.getLastKnownLocation(locationProvider);
+        if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    Activity#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for Activity#requestPermissions for more details.
+            return;
+        }
+        Location location = locationManager.getLastKnownLocation(locationProvider);
         if (location!=null){
             showLocation(location);
         }else{
+            City= "昆明";
             // 监视地理位置变化，第二个和第三个参数分别为更新的最短时间minTime和最短距离minDistace
             locationManager.requestLocationUpdates(locationProvider, 0, 0,mListener);
         }
@@ -760,7 +783,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
             NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
             if (networkInfo != null && networkInfo.isAvailable()) {
-                getLocation(MainActivity.this);
+
                 JinrishiciFactory.init(MainActivity.this);
                 initView();
                 setBack();
